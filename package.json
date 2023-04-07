@@ -1,0 +1,29 @@
+{
+  "name": "queeps_test_api",
+  "version": "1.0.0",
+  "description": "\"A test express Api\"",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Excelmod/queeps_test_api.git"
+  },
+  "author": "Lucas Julien",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Excelmod/queeps_test_api/issues"
+  },
+  "homepage": "https://github.com/Excelmod/queeps_test_api#readme",
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}
