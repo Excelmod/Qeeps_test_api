@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const handleJWT = require("../middlewares/handleJWT");
+const path = require("path");
 
 const createServer = () => {
 	// init the express server
