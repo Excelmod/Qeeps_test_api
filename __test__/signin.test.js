@@ -68,7 +68,7 @@ describe("SignIn", () => {
 		expect(res.statusCode).toEqual(400);
 	});
 
-	it("should't create a new user because the email attribute missing and send statuscode 400 ", async () => {
+	it("should't create a new user because the email attribute is invalid and send statuscode 400 ", async () => {
 		const res = await request(app).post("/signin/agent").send({
 			email: "testemail.com",
 			password: "test",
