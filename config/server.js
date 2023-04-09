@@ -15,7 +15,7 @@ const createServer = () => {
 	//public routes
 	server.use("/signin", require("../routes/signin.route"));
 	server.use("/auth", require("../routes/auth.route"));
-	server.use("/refresh", require("./routes/refresh"));
+	server.use("/refresh", require("../routes/refresh.route"));
 
 	// middleware for verify the information in the JWT access token and put the data in the request object
 	server.use(handleJWT);

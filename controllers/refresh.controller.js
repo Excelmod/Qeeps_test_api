@@ -1,44 +1,33 @@
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
-const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 
-const createNewUser = async (req, res, user_type) => {
-	const { email, password } = req.body;
-	if (!email || !password)
-		return res
-			.status(400)
-			.json({ message: "Email and password are required." });
+const refreshAccessToken = async (req, res) => {
+	const cookies = req.cookies;
+	if (!cookies?.jwt) return res.sendStatus(401);
 
-	//check if the user doesn't already exist
-	const userAlreadyExist = await User.findOne({ email: email }).exec();
-	if (userAlreadyExist) return res.sendStatus(409); //Conflict
-	try {
-		// hash and salt the password before we write it on the database
-		const hashedSaltPwd = await bcrypt.hash(password, 10);
-		const result = await User.create({
-			email: email,
-			password: hashedSaltPwd,
-			user_type: user_type,
-		});
-		return res.status(201).json({
-			success: `New ${user_type} with email: ${email} created!`,
-		});
-	} catch (err) {
-		console.error(err.message);
-		if (err instanceof mongoose.Error.ValidationError) {
-			return res.status(400).json({ message: err.message });
-		} else {
-			return res.status(500).json({ message: err.message });
+	const refreshToken = cookies.jwt;
+
+	const foundUser = await User.findOne({ refreshToken: refreshToken }).exec();
+	if (!foundUser) return res.sendStatus(403);
+	jwt.verify(
+		refreshToken,
+		process.env.REFRESH_TOKEN_SECRET,
+		(err, decoded) => {
+			if (err || foundUser._id !== decoded.id) return res.sendStatus(403);
+			const accessToken = jwt.sign(
+				{
+					UserInfo: {
+						id: foundUser._id,
+						email: foundUser.email,
+						user_type: foundUser.user_type,
+					},
+				},
+				process.env.ACCESS_TOKEN_SECRET,
+				{ expiresIn: "2m" }
+			);
+			res.json({ accessToken });
 		}
-	}
+	);
 };
 
-const createNewCandidate = async (req, res) => {
-	return await createNewUser(req, res, "candidate");
-};
-
-const createNewAgent = async (req, res) => {
-	return await createNewUser(req, res, "agent");
-};
-
-module.exports = { createNewCandidate, createNewAgent };
+module.exports = { refreshAccessToken };
