@@ -13,6 +13,7 @@ describe("Authentification", () => {
 	let password = "test";
 	let invalidEmail = "invalidtest@email.com";
 	let invalidPwd = "invalidtest@email.com";
+	let cookies;
 
 	beforeAll(async () => {
 		const connection = await mongoose.connect(globalThis.__MONGO_URI__, {
@@ -22,7 +23,6 @@ describe("Authentification", () => {
 		if (!connection) {
 			console.log("we can't connect to the database");
 		}
-		console.log("access_token : ", process.env.ACCESS_TOKEN_SECRET);
 	});
 
 	afterAll(async () => {
@@ -54,7 +54,7 @@ describe("Authentification", () => {
 		expect(res.statusCode).toEqual(200);
 		expect(res.body.accessToken).toBeDefined();
 		access_token = res.body.accessToken;
-		console.log("access_token : ", access_token);
+		cookies = res.headers["set-cookie"];
 	});
 
 	it("should't login the user with invalid email and send statuscode 401 Unauthorize ", async () => {
@@ -73,7 +73,7 @@ describe("Authentification", () => {
 		expect(res.statusCode).toEqual(401);
 	});
 
-	it("should login the user create a new refresh token and return access token", async () => {
+	it("should get the user info of the request user with a valid access token", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email,
 			password: password,
@@ -81,8 +81,7 @@ describe("Authentification", () => {
 		expect(res.statusCode).toEqual(200);
 		expect(res.body.accessToken).toBeDefined();
 		access_token = res.body.accessToken;
-		console.log("access_token : ", access_token);
-		console.log("pre test");
+
 		res = await request(app)
 			.get("/user/me")
 			.set("Authorization", `Bearer ${access_token}`);
@@ -90,7 +89,7 @@ describe("Authentification", () => {
 		expect(res.body.email).toEqual(email);
 	});
 
-	it("shouldn't login the user with invalid access_token and return 403", async () => {
+	it("shouldn't get the user info of the request user with invalid access_token and return 403", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email,
 			password: password,
@@ -98,27 +97,36 @@ describe("Authentification", () => {
 		expect(res.statusCode).toEqual(200);
 		expect(res.body.accessToken).toBeDefined();
 		access_token = res.body.accessToken;
-		console.log("access_token : ", access_token);
-		console.log("pre test");
+
 		res = await request(app)
 			.get("/user/me")
 			.set("Authorization", `Bearer fdsfds`);
 		expect(res.statusCode).toEqual(403);
 	});
 
-	it("shouldn't login the user with invalid access_token and return 403", async () => {
+	it("should use the refresh token and return a new access token", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email,
 			password: password,
 		});
 		expect(res.statusCode).toEqual(200);
 		expect(res.body.accessToken).toBeDefined();
+		cookies = res.headers["set-cookie"];
+		res = await request(app).get("/refresh").set("Cookie", cookies);
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
 		access_token = res.body.accessToken;
-		console.log("access_token : ", access_token);
-		console.log("pre test");
+	});
+
+	it("shouldn't refresh access token if cookies don't exist and return 401", async () => {
+		res = await request(app).get("/refresh");
+		expect(res.statusCode).toEqual(401);
+	});
+
+	it("shouldn't refresh access token if cookies jwt token is invalid and return 403", async () => {
 		res = await request(app)
-			.get("/user/me")
-			.set("Authorization", `Bearer fdsfds`);
+			.get("/refresh")
+			.set("Cookie", ["jwt=ddfajjdlsajfh"]);
 		expect(res.statusCode).toEqual(403);
 	});
 });

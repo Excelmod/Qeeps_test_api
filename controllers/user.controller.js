@@ -20,7 +20,6 @@ const getUserById = async (req, res) => {
 };
 
 const getMyProfile = async (req, res) => {
-	console.log("profile");
 	if (!req?.id) {
 		res.sendStatus(403);
 	}
