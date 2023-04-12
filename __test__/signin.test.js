@@ -5,7 +5,7 @@ const createServer = require("../config/server");
 
 const app = createServer();
 
-describe("SignIn", () => {
+describe("Sign in", () => {
 	beforeAll(async () => {
 		const connection = await mongoose.connect(globalThis.__MONGO_URI__, {
 			useNewUrlParser: true,
@@ -32,7 +32,8 @@ describe("SignIn", () => {
 			`New agent with email: ${email} created!`
 		);
 
-		const user = await User.findOne({ email: email }).exec();
+		let user = await User.findOne({ email: email }).exec();
+
 		expect(user.email).toEqual(email);
 		expect(user.user_type).toEqual("agent");
 	});
