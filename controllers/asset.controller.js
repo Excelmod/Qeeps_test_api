@@ -12,7 +12,7 @@ const createNewAsset = async (req, res) => {
 	const newAsset = {
 		title: title,
 		address: address,
-		number_of_rooms: number_of_rooms,
+		number_of_rooms: Number(number_of_rooms),
 		created_by: req.id,
 		images: [],
 	};
@@ -25,9 +25,8 @@ const createNewAsset = async (req, res) => {
 	}
 	try {
 		const result = await Asset.create(newAsset);
-		return res.status(201).json({
-			success: `New Asset  ${title} created!`,
-		});
+
+		return res.status(201).send(result);
 	} catch (err) {
 		console.error(err.message);
 		if (err instanceof mongoose.Error.ValidationError) {
@@ -36,6 +35,41 @@ const createNewAsset = async (req, res) => {
 			return res.status(500).json({ message: err.message });
 		}
 	}
+};
+
+const modifyAssetById = async (req, res) => {
+	if (!req?.params?.id) {
+		return res.status(400).json({ message: "ID is required" }); // Invalid
+	}
+	const foundAsset = await Asset.findOne({ _id: req.params.id }).exec();
+	if (!foundAsset) {
+		return res
+			.status(404) //Not found
+			.json({ message: `Asset ID ${req.params.id} not found` });
+	}
+	if (foundAsset.created_by != req.id) {
+		return res
+			.status(403) //Forbidden
+			.json({ message: `this user cannot delete this asset` });
+	}
+	if (req?.body?.title) foundAsset.title = req.body.title;
+	if (req?.body?.address) foundAsset.address = req.body.address;
+	if (req?.body?.number_of_rooms)
+		foundAsset.number_of_rooms = req.body.number_of_rooms;
+
+	if (req?.files.length() >= 1) {
+		const imgArray = [];
+		for (let i in req?.files) {
+			const image = {
+				mime_type: req.files[i].mimetype,
+				data: req.files[i].buffer,
+			};
+			imgArray.push(image);
+		}
+		foundAsset.images = [...imgArray];
+	}
+	foundAsset.save();
+	res.send(foundAsset);
 };
 
 const getAllAssets = async (req, res) => {
@@ -67,7 +101,7 @@ const deleteAssetById = async (req, res) => {
 			.status(404) //Not found
 			.json({ message: `Asset ID ${req.params.id} not found` });
 	}
-	if (foundAsset.created_by !== req.id) {
+	if (foundAsset.created_by != req.id) {
 		return res
 			.status(403) //Forbidden
 			.json({ message: `this user cannot delete this asset` });
@@ -114,4 +148,5 @@ module.exports = {
 	deleteAssetById,
 	applyToAssetId,
 	getMyAssets,
+	modifyAssetById,
 };

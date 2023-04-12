@@ -2,6 +2,7 @@ const Agency = require("../models/Agency");
 const User = require("../models/User");
 
 const createNewAgency = async (req, res) => {
+	console.log("err1");
 	const { name } = req?.body;
 	if (!name)
 		return res.status(400).json({
@@ -22,15 +23,15 @@ const createNewAgency = async (req, res) => {
 		newAgency.logo = image;
 	}
 	try {
-		await Agency.create(newAgency);
-		return res.status(201).json({
-			success: `New Agency ${newAgency.name} created!`,
-		});
+		const result = await Agency.create(newAgency);
+		return res.status(201).json(result);
 	} catch (err) {
 		console.error(err.message);
 		if (err instanceof mongoose.Error.ValidationError) {
+			console.log(err.message);
 			return res.status(400).json({ message: err.message }); // Invalid
 		} else {
+			console.log("err", err.message);
 			return res.status(500).json({ message: err.message });
 		}
 	}
