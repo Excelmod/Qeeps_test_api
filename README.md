@@ -9,3 +9,9 @@
     npm ci
     npx jest
 
+## Environment variables
+
+    DATABASE_URI= Uri to your mongodb 
+    ACCESS_TOKEN_SECRET= A secret generate key
+    REFRESH_TOKEN_SECRET= A secret generate key
+
