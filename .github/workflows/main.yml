@@ -13,7 +13,9 @@ jobs:
   
   build:
     runs-on: ubuntu-latest
-    environment: .env
+    env:
+      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     strategy:
       matrix:
