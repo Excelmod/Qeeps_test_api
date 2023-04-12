@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const ImageSchema = require('./schemas/ImageSchema');
+const mongoose = require("mongoose");
+const ImageSchema = require("./schemas/ImageSchema");
 const Schema = mongoose.Schema;
 
 const AssetSchema = new Schema({
@@ -8,10 +8,11 @@ const AssetSchema = new Schema({
 	address: { type: String, required: true },
 	number_of_rooms: {
 		type: Number,
-		min: [0, 'The numbers of rooms have to be positive'],
+		min: [0, "The numbers of rooms have to be positive"],
 		required: true,
 	},
 	images: [ImageSchema],
+	created_by: Schema.Types.ObjectId,
 });
 
-module.exports = mongoose.model('Asset', AssetSchema);
+module.exports = mongoose.model("Asset", AssetSchema);

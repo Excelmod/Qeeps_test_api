@@ -9,7 +9,7 @@ const authUser = async (req, res) => {
 			.status(400)
 			.json({ message: "Email and password are required." });
 
-	const foundUser = User.findOne({ email: email }).exec();
+	const foundUser = await User.findOne({ email: email }).exec();
 	if (!foundUser) return res.sendStatus(401);
 	const match = await bcrypt.compare(password, foundUser.password);
 	if (match) {
@@ -24,17 +24,17 @@ const authUser = async (req, res) => {
 			process.env.ACCESS_TOKEN_SECRET,
 			{ expiresIn: "2m" }
 		);
-		const refreshToken = jwt.sign(
+		const refresh_token = jwt.sign(
 			{ id: foundUser._id },
 			process.env.REFRESH_TOKEN_SECRET,
 			{ expiresIn: "1d" }
 		);
 
-		foundUser.refreshToken = refreshToken;
+		foundUser.refresh_token = refresh_token;
 		const result = await foundUser.save();
 		console.log(result);
 
-		res.cookie("jwt", refreshToken, {
+		res.cookie("jwt", refresh_token, {
 			httpOnly: true,
 			sameSite: "None",
 			//secure: true, should be set in production
