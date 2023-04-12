@@ -105,4 +105,20 @@ describe("Authentification", () => {
 			.set("Authorization", `Bearer fdsfds`);
 		expect(res.statusCode).toEqual(403);
 	});
+
+	it("shouldn't login the user with invalid access_token and return 403", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token = res.body.accessToken;
+		console.log("access_token : ", access_token);
+		console.log("pre test");
+		res = await request(app)
+			.get("/user/me")
+			.set("Authorization", `Bearer fdsfds`);
+		expect(res.statusCode).toEqual(403);
+	});
 });
