@@ -13,6 +13,7 @@ jobs:
   
   build:
     runs-on: ubuntu-latest
+    environment: .env
 
     strategy:
       matrix:
@@ -26,6 +27,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run:  VAR_1 = "test"
+    - run: echo ${{VAR_1}}
     - run: echo ${{env.ACCESS_TOKEN_SECRET}}
     - run: npm ci
     - run: npm run build --if-present
