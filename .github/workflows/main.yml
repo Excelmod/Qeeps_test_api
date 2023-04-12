@@ -12,7 +12,6 @@ on:
 jobs:
   
   build:
-    environment: .env
     runs-on: ubuntu-latest
 
     strategy:
