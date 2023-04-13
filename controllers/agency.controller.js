@@ -2,7 +2,6 @@ const Agency = require("../models/Agency");
 const User = require("../models/User");
 
 const createNewAgency = async (req, res) => {
-	console.log("err1");
 	const { name } = req?.body;
 	if (!name)
 		return res.status(400).json({
@@ -22,6 +21,7 @@ const createNewAgency = async (req, res) => {
 		};
 		newAgency.logo = image;
 	}
+
 	try {
 		const result = await Agency.create(newAgency);
 		return res.status(201).json(result);
@@ -66,12 +66,12 @@ const deleteAgencyById = async (req, res) => {
 			.status(404) //Not found
 			.json({ message: `Agency ID ${req.params.id} not found` });
 	}
-	if (foundAgency.created_by !== req.id) {
+	if (foundAgency.created_by != req.id) {
 		return res
 			.status(403) //Forbidden
 			.json({ message: `this user cannot delete this agency` });
 	}
-	const result = await Agency.deleteOne({ _id: req.body.id });
+	const result = await Agency.deleteOne({ _id: req?.params?.id });
 	res.json(result);
 };
 
@@ -86,7 +86,7 @@ const registerToAgencyId = async (req, res) => {
 			.json({ message: `Asset ID ${req.params.id} not found` });
 	}
 	const foundUser = await User.findById(req.id).exec();
-	if (!foundAgency.agents.includes(req.id)) {
+	if (foundAgency.agents.includes(req.id)) {
 		foundAgency.agents.push(req.id);
 		await foundAgency.save();
 		foundUser.agency = foundAgency._id;
@@ -103,6 +103,7 @@ const registerToAgencyId = async (req, res) => {
 
 const getMyAgency = async (req, res) => {
 	const foundUser = await User.findById(req.id).exec();
+
 	if (foundUser.agency) {
 		const agency = await Agency.findById(foundUser.agency).exec();
 		if (!agency) {
@@ -110,10 +111,39 @@ const getMyAgency = async (req, res) => {
 			foundUser.save();
 			return res.status(204).json({ message: "No agency found." });
 		} else {
-			res.json(agency);
+			return res.json(agency);
 		}
 	}
 	return res.status(204).json({ message: "No agency found." });
+};
+
+const modifyAgencyById = async (req, res) => {
+	if (!req?.params?.id) {
+		return res.status(400).json({ message: "ID is required" }); // Invalid
+	}
+	const foundAgency = await Agency.findOne({ _id: req.params.id }).exec();
+	if (!foundAgency) {
+		return res
+			.status(404) //Not found
+			.json({ message: `Agency ID ${req.params.id} not found` });
+	}
+	if (foundAgency.created_by != req.id) {
+		return res
+			.status(403) //Forbidden
+			.json({ message: `this user cannot delete this agency` });
+	}
+	if (req?.body?.name) foundAgency.name = req.body.name;
+
+	if (req?.file) {
+		const image = {
+			mime_type: req.file.mimetype,
+			data: req.file.buffer,
+		};
+
+		foundAgency.logo = { ...image };
+	}
+	foundAgency.save();
+	res.send(foundAgency);
 };
 
 module.exports = {
@@ -123,4 +153,5 @@ module.exports = {
 	deleteAgencyById,
 	registerToAgencyId,
 	getMyAgency,
+	modifyAgencyById,
 };

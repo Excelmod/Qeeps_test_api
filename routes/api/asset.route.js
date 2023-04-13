@@ -19,6 +19,12 @@ router.get(
 	assetsController.getMyAssets
 );
 
+router.put(
+	"/apply/:id",
+	verifyUserType("candidate"),
+	assetsController.applyToAssetId
+);
+
 router.get("/myAssets", verifyUserType("agent"), assetsController.getMyAssets);
 
 router

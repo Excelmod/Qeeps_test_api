@@ -24,7 +24,6 @@ const createNewUser = async (req, res, user_type) => {
 			success: `New ${user_type} with email: ${email} created!`,
 		});
 	} catch (err) {
-		console.error(err.message);
 		if (err instanceof mongoose.Error.ValidationError) {
 			return res.status(400).json({ message: err.message });
 		} else {

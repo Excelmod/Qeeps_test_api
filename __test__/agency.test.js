@@ -47,7 +47,6 @@ describe("Users", () => {
 
 		expect(user.email).toEqual(email1);
 		expect(user.user_type).toEqual("agent");
-		id1 = user._id;
 	});
 
 	it("should create a new agent 2 and send statuscode 201", async () => {
@@ -64,10 +63,9 @@ describe("Users", () => {
 
 		expect(user.email).toEqual(email2);
 		expect(user.user_type).toEqual("candidate");
-		id2 = user._id;
 	});
 
-	it("should create a new asset and send statuscode 201", async () => {
+	it("should create a new agency and send statuscode 201", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email1,
 			password: password,
@@ -75,6 +73,7 @@ describe("Users", () => {
 		expect(res.statusCode).toEqual(200);
 		expect(res.body.accessToken).toBeDefined();
 		access_token1 = res.body.accessToken;
+
 		const name = "A agency";
 		res = await request(app)
 			.post("/agency")
@@ -85,10 +84,146 @@ describe("Users", () => {
 
 		expect(res.statusCode).toEqual(201);
 
-		const id = res.body._id;
+		id1 = res.body._id;
 
-		let agency = await Agency.findById(id).exec();
+		let agency = await Agency.findById(id1).exec();
 
 		expect(agency.name).toEqual(name);
+	});
+
+	it("should create a another new agency and send statuscode 201", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		const name = "A new agency";
+		res = await request(app)
+			.post("/agency")
+			.set("Content-Type", "multipart/form-data")
+			.set("Authorization", `Bearer ${access_token1}`)
+			.field("name", name)
+			.attach("logo", img2Url);
+
+		expect(res.statusCode).toEqual(201);
+
+		id2 = res.body._id;
+
+		let agency = await Agency.findById(id2).exec();
+
+		expect(agency.name).toEqual(name);
+	});
+
+	it("should get all agencies by Id and send statuscode 200 ", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.get(`/agency`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		expect(res.body.length).toEqual(2);
+	});
+
+	it("should get agency by Id and send statuscode 200", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.get(`/agency/${id1}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		let agency = await Agency.findById(id1).exec();
+
+		expect(agency.name).toEqual(res.body.name);
+	});
+
+	it("should let a agent register to a agency and get this agency", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.get(`/agency/my`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(204);
+
+		res = await request(app)
+			.post(`/agency/register/${id1}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		res = await request(app)
+			.get(`/agency/my`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+		expect(res.body._id).toEqual(id1);
+	});
+
+	it("should let a agent modify a agency if he was the creator", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		let agency = await Agency.findById(id1).exec();
+
+		expect(agency.name).toEqual("A agency");
+
+		res = await request(app)
+			.put(`/agency/${id1}`)
+			.set("Authorization", `Bearer ${access_token1}`)
+			.send({ name: "A new name" });
+
+		expect(res.statusCode).toEqual(200);
+
+		asset = await Agency.findById(id1).exec();
+		expect(asset.name).toEqual("A new name");
+	});
+
+	it("should let a agent delete a agency if he was the creator", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.delete(`/agency/${id1}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		asset = await Agency.findById(id1).exec();
+		expect(asset).toEqual(null);
 	});
 });
