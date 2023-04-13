@@ -1,3 +1,4 @@
+const Agency = require("../models/Agency");
 const Asset = require("../models/Asset");
 const User = require("../models/User");
 
@@ -23,10 +24,9 @@ const createNewAsset = async (req, res) => {
 		};
 		newAsset.images.push(image);
 	}
+	let result;
 	try {
-		const result = await Asset.create(newAsset);
-
-		return res.status(201).send(result);
+		result = await Asset.create(newAsset);
 	} catch (err) {
 		console.error(err.message);
 		if (err instanceof mongoose.Error.ValidationError) {
@@ -35,6 +35,14 @@ const createNewAsset = async (req, res) => {
 			return res.status(500).json({ message: err.message });
 		}
 	}
+	const foundUser = await User.findById(req.id).exec();
+
+	if (foundUser.agency) {
+		const foundAgency = await Agency.findById(foundUser.agency).exec();
+		foundAgency.assets.push(result._id);
+		foundAgency.save();
+	}
+	return res.status(201).send(result);
 };
 
 const modifyAssetById = async (req, res) => {
@@ -141,6 +149,21 @@ const getMyAssets = async (req, res) => {
 	res.json(assets);
 };
 
+const getAssetsByAgency = async (req, res) => {
+	if (!req?.params?.id) {
+		return res.status(400).json({ message: "ID is required" }); // Invalid
+	}
+	const foundAgency = await Agency.findOne({ _id: req.params.id }).exec();
+	if (!foundAgency) {
+		return res
+			.status(404) //Not found
+			.json({ message: `Agency ID ${req.params.id} not found` });
+	}
+	const assets = await Asset.find({ _id: { $in: foundAgency.assets } });
+	if (!assets) return res.status(204).json({ message: "No asset found." });
+	res.json(assets);
+};
+
 module.exports = {
 	getAllAssets,
 	createNewAsset,
@@ -149,4 +172,5 @@ module.exports = {
 	applyToAssetId,
 	getMyAssets,
 	modifyAssetById,
+	getAssetsByAgency,
 };
