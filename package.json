@@ -4,6 +4,7 @@
 	"description": "\"A test express Api\"",
 	"main": "app.js",
 	"scripts": {
+		"start": "node app.js",
 		"test": "jest",
 		"dev": "nodemon app.js"
 	},

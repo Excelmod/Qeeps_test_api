@@ -37,7 +37,7 @@ const authUser = async (req, res) => {
 			httpOnly: true,
 			sameSite: "None",
 			//secure: true, should be set in production
-			maxAge: 24 * 60 * 60 * 1000,
+			maxAge: 24 * 60 * 60 * 1000, 
 		});
 		res.json({ accessToken });
 	} else {
