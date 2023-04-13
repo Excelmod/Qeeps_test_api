@@ -24,6 +24,7 @@ router.get("/my", verifyUserType("agent"), agencyController.getMyAgency);
 router
 	.route("/:id")
 	.get(agencyController.getAgencyById)
-	.delete(verifyUserType("agent"), agencyController.deleteAgencyById);
+	.delete(verifyUserType("agent"), agencyController.deleteAgencyById)
+	.put(verifyUserType("agent"), agencyController.modifyAgencyById);
 
 module.exports = router;

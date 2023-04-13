@@ -129,4 +129,16 @@ describe("Authentification", () => {
 			.set("Cookie", ["jwt=ddfajjdlsajfh"]);
 		expect(res.statusCode).toEqual(403);
 	});
+
+	it("should let a user to logout", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		cookies = res.headers["set-cookie"];
+		res = await request(app).get("/logout").set("Cookie", cookies);
+		expect(res.statusCode).toEqual(204);
+	});
 });

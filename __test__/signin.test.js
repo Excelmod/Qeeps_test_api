@@ -14,7 +14,6 @@ describe("Sign in", () => {
 		if (!connection) {
 			console.log("we can't connect to the database");
 		}
-		console.log("access_token : ", process.env.ACCESS_TOKEN_SECRET);
 	});
 
 	afterAll(async () => {

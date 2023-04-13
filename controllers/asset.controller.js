@@ -57,7 +57,7 @@ const modifyAssetById = async (req, res) => {
 	if (req?.body?.number_of_rooms)
 		foundAsset.number_of_rooms = req.body.number_of_rooms;
 
-	if (req?.files.length() >= 1) {
+	if (req?.files?.length >= 1) {
 		const imgArray = [];
 		for (let i in req?.files) {
 			const image = {
@@ -106,7 +106,7 @@ const deleteAssetById = async (req, res) => {
 			.status(403) //Forbidden
 			.json({ message: `this user cannot delete this asset` });
 	}
-	const result = await Asset.deleteOne({ _id: req.body.id });
+	const result = await Asset.deleteOne({ _id: req?.params?.id });
 	res.json(result);
 };
 
@@ -123,7 +123,7 @@ const applyToAssetId = async (req, res) => {
 	const foundUser = await User.findById(req.id).exec();
 	if (!foundUser.assets.includes(req.params.id)) {
 		foundUser.assets.push(req.params.id);
-		await foundEmployee.save();
+		await foundUser.save();
 		res.status(200).send({
 			message: `Succesfully apply to asset ID ${req.params.id}`,
 		});
