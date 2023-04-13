@@ -216,6 +216,25 @@ describe("Users", () => {
 		expect(res.body[0]._id).toEqual(id2);
 	});
 
+	it("should let a agent delete a agency if he was the creator", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.delete(`/agency/${idAgency}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		asset = await Agency.findById(idAgency).exec();
+		expect(asset).toEqual(null);
+	});
+
 	it("should get a asset by id and send statuscode 200", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email1,

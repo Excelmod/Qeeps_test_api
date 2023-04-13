@@ -132,7 +132,9 @@ describe("Users", () => {
 
 		expect(res.statusCode).toEqual(200);
 
-		expect(res.body.length).toEqual(2);
+		let agencies = await Agency.find({}).exec();
+
+		expect(agencies.length).toEqual(res.body.length);
 	});
 
 	it("should get agency by Id and send statuscode 200", async () => {
