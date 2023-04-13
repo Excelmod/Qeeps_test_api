@@ -8,6 +8,7 @@ const AgencySchema = new Schema({
 	logo: ImageSchema,
 	created_by: Schema.Types.ObjectId,
 	agents: [Schema.Types.ObjectId],
+	assets: { type: [Schema.Types.ObjectId], default: [] },
 });
 
 module.exports = mongoose.model("Agency", AgencySchema);

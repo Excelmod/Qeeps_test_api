@@ -24,7 +24,7 @@ router.post(
 	upload.array("asset_photos", 5),
 	assetsController.createNewAsset
 );
-// Create a new asset.
+// Create a new asset, add the asset to the agency of the agent if exist and to the assets of the agent.
 // post request
 // middleware verifyUserType verify that only agent can perform this request return status 401 otherwise
 // set Authorization header with the access token as a Bearer token
@@ -42,6 +42,24 @@ router.post(
 //  invalid access token.
 // 	400 status code
 // 	body parameters are missing
+
+router.get("/agency/:id", assetsController.getAssetsByAgency);
+// get all assets of the agency with id :id
+// get request
+// set Authorization header with the access token as a Bearer token
+// On success:
+//  200 status code
+//  res.body : [Asset]
+//
+//  204 status code
+//  there are no asset found
+// Error:
+//  403 status code
+//  invalid access token.
+//  404 status code
+//  asset not found.
+// 	400 status code
+// 	url parameters are missing
 
 router.get(
 	"/myApplieds",

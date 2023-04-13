@@ -8,12 +8,13 @@ const img2Url = path.join(__dirname, "..", "img", "house_2.png");
 
 const createServer = require("../config/server");
 const Asset = require("../models/Asset");
+const Agency = require("../models/Agency");
 const { log } = require("console");
 
 const app = createServer();
 
 describe("Users", () => {
-	let access_token1, access_token2, id1, id2;
+	let access_token1, access_token2, id1, id2, idAgency;
 	let email1 = "testAsset1@email.com";
 	let email2 = "testAsset2@email.com";
 
@@ -94,6 +95,61 @@ describe("Users", () => {
 		expect(asset.images.length).toEqual(2);
 	});
 
+	it("should create a new agency and send statuscode 201", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		const name = "A agency asset";
+		res = await request(app)
+			.post("/agency")
+			.set("Content-Type", "multipart/form-data")
+			.set("Authorization", `Bearer ${access_token1}`)
+			.field("name", name)
+			.attach("logo", img1Url);
+
+		expect(res.statusCode).toEqual(201);
+
+		idAgency = res.body._id;
+
+		let agency = await Agency.findById(idAgency).exec();
+
+		expect(agency.name).toEqual(name);
+	});
+
+	it("should let a agent register to a agency and get this agency", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.get(`/agency/my`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(204);
+
+		res = await request(app)
+			.post(`/agency/register/${idAgency}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		res = await request(app)
+			.get(`/agency/my`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+		expect(res.body._id).toEqual(idAgency);
+	});
+
 	it("should create a second asset and send statuscode 201", async () => {
 		let res = await request(app).post("/auth").send({
 			email: email1,
@@ -139,6 +195,44 @@ describe("Users", () => {
 		let assets = await Asset.find({}).exec();
 
 		expect(assets.length).toEqual(res.body.length);
+	});
+
+	it("should get all the asset of a agency and send statuscode 200", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.get(`/asset/agency/${idAgency}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		expect(res.body.length).toEqual(1);
+		expect(res.body[0]._id).toEqual(id2);
+	});
+
+	it("should let a agent delete a agency if he was the creator", async () => {
+		let res = await request(app).post("/auth").send({
+			email: email1,
+			password: password,
+		});
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.accessToken).toBeDefined();
+		access_token1 = res.body.accessToken;
+
+		res = await request(app)
+			.delete(`/agency/${idAgency}`)
+			.set("Authorization", `Bearer ${access_token1}`);
+
+		expect(res.statusCode).toEqual(200);
+
+		asset = await Agency.findById(idAgency).exec();
+		expect(asset).toEqual(null);
 	});
 
 	it("should get a asset by id and send statuscode 200", async () => {
