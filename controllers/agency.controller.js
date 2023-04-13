@@ -83,7 +83,7 @@ const registerToAgencyId = async (req, res) => {
 	if (!foundAgency) {
 		return res
 			.status(404) //Not found
-			.json({ message: `Asset ID ${req.params.id} not found` });
+			.json({ message: `Agency ID ${req.params.id} not found` });
 	}
 	const foundUser = await User.findById(req.id).exec();
 	if (foundAgency.agents.includes(req.id)) {

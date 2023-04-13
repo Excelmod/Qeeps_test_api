@@ -1,6 +1,7 @@
 # REST API Qeeps_test
 
 ## Run the app
+
     npm install
     npm start
 
@@ -11,7 +12,7 @@
 
 ## Environment variables
 
-    DATABASE_URI= Uri to your mongodb 
+    DATABASE_URI= Uri to your mongo db 
     ACCESS_TOKEN_SECRET= A secret generate key
     REFRESH_TOKEN_SECRET= A secret generate key
 
